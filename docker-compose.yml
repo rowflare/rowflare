@@ -1,0 +1,18 @@
+services:
+  rowflare:
+    image: ghcr.io/rowflare/rowflare:latest
+    # To build from this checkout instead of pulling: docker compose up --build
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    environment:
+      MODE: selfhost
+      ALLOW_SIGNUP: "false"
+      # Public URL of the instance, used for absolute links such as invites.
+      APP_URL: http://localhost:8787
+    volumes:
+      - rowflare-data:/data
+
+volumes:
+  rowflare-data:

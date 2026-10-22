@@ -1,0 +1,58 @@
+{
+  "name": "rowflare",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Open-source Airtable alternative that runs on your own Cloudflare account.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run build:web && wrangler dev",
+    "dev:web": "vite",
+    "build": "npm run build:web",
+    "build:web": "vite build",
+    "build:docker": "wrangler deploy --dry-run --outdir dist/worker && node docker/export-options.mjs",
+    "deploy": "npm run build && wrangler deploy",
+    "start": "node docker/server.mjs",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:worker": "vitest run --project worker"
+  },
+  "dependencies": {
+    "@cfworker/json-schema": "4.1.1",
+    "@glideapps/glide-data-grid": "6.0.3",
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "echarts": "6.1.0",
+    "fractional-indexing": "3.2.0",
+    "hono": "4.13.13",
+    "lodash": "4.18.1",
+    "marked": "4.3.0",
+    "miniflare": "5.20261006.1-alpha",
+    "papaparse": "5.5.3",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-grid-layout": "2.2.4",
+    "react-responsive-carousel": "3.2.23",
+    "zod": "4.6.4"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "1.2.8",
+    "@cloudflare/workers-types": "5.20261012.1",
+    "@types/papaparse": "5.5.2",
+    "@types/react": "18.3.31",
+    "@types/react-dom": "18.3.7",
+    "@vitejs/plugin-react": "5.2.0",
+    "typescript": "5.9.3",
+    "vite": "7.3.7",
+    "vitest": "4.1.11",
+    "wrangler": "4.149.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "esbuild@0.28.2": true,
+    "workerd@1.20260815.1": true,
+    "workerd@1.20260925.1": true,
+    "workerd@1.20261006.1": true
+  }
+}

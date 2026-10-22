@@ -1,0 +1,51 @@
+.dash-page { display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--bg); }
+.dash-bar { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--panel); flex-wrap: wrap; }
+.dash-title { margin: 0; font-size: 16px; font-weight: 600; }
+.dash-range { width: auto; }
+.dash-canvas { flex: 1; overflow: auto; padding: 4px 4px 24px; position: relative; }
+.dash-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 80px 16px; }
+.dash-stack { display: flex; flex-direction: column; gap: 12px; padding: 12px 16px; }
+.widget { height: 100%; display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.dash-canvas.editing .widget { border-style: dashed; cursor: move; }
+.widget-head { display: flex; align-items: center; gap: 6px; padding: 8px 10px 0 12px; min-height: 32px; }
+.widget-title { flex: 1; font-weight: 600; font-size: 13px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.widget-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.widget-foot { padding: 0 12px 6px; }
+.widget-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 8px; text-align: center; }
+.widget-empty p { margin: 0; }
+.widget-text { padding: 4px 14px 10px; overflow: auto; }
+.widget-text h1, .widget-text h2, .widget-text h3 { margin: 4px 0 8px; }
+.chart { flex: 1; min-height: 0; width: 100%; }
+.metric { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 4px; padding: 0 14px 10px; background: none; border: 0; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.metric:disabled { cursor: default; }
+.metric-value { font-size: 30px; font-weight: 650; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.metric-change { font-size: 12px; color: var(--muted); }
+.metric-change.up { color: var(--ok); }
+.metric-change.down { color: var(--danger); }
+.pivot-wrap { flex: 1; overflow: auto; padding: 0 12px 10px; }
+.pivot { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+.pivot th, .pivot td { border-bottom: 1px solid var(--line); padding: 5px 8px; text-align: right; white-space: nowrap; }
+.pivot th:first-child { text-align: left; font-weight: 500; }
+.pivot thead th { color: var(--muted); font-weight: 500; }
+.cell-link { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; }
+.cell-link:hover { color: var(--accent-ink); text-decoration: underline; }
+.dash-editor { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100vw); background: var(--panel); border-left: 1px solid var(--line); box-shadow: var(--shadow); display: flex; flex-direction: column; z-index: 40; }
+.dash-editor-head, .dash-editor-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.dash-editor-foot { border-top: 1px solid var(--line); border-bottom: 0; justify-content: flex-end; }
+.dash-editor-body { flex: 1; overflow: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
+.dash-editor-preview { height: 220px; flex: none; }
+.dash-field { display: flex; flex-direction: column; gap: 4px; }
+.dash-field-label { font-size: 12px; color: var(--muted); }
+.dash-inline { display: flex; gap: 6px; }
+.dash-inline > * { flex: 1; min-width: 0; }
+.dash-check { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.drill-wrap { max-height: 60vh; overflow: auto; }
+.drill-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.drill-table th, .drill-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.drill-table tbody tr { cursor: pointer; }
+.drill-table tbody tr:hover, .drill-table tbody tr:focus { background: var(--panel-2); outline: none; }
+.dash-tab button:first-child { display: inline-flex; align-items: center; gap: 5px; }
+@media (max-width: 767px) {
+  .dash-bar { padding: 8px 16px; }
+  .dash-editor { width: 100vw; }
+}

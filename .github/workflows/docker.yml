@@ -1,0 +1,97 @@
+name: Docker image
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+# Published to GitHub Container Registry and Docker Hub. Docker Hub needs the DOCKERHUB_USERNAME and DOCKERHUB_TOKEN secrets.
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+  HUB_IMAGE: docker.io/rowflare/rowflare
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      # Build the native image first and check that it starts and serves the app.
+      - name: Build for smoke test
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: rowflare:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke test
+        run: |
+          docker run -d --name rowflare -p 8787:8787 rowflare:test
+          for _ in $(seq 1 60); do curl -fs http://localhost:8787/api/config >/dev/null && break; sleep 1; done
+          curl -fs http://localhost:8787/api/config
+          curl -fs -o /dev/null http://localhost:8787/
+          curl -fs -c jar -H 'x-rf: 1' -H 'content-type: application/json' -d '{"email":"ci@example.com","password":"correct horse"}' http://localhost:8787/api/auth/signup
+          ws=$(curl -fs -b jar http://localhost:8787/api/workspaces | jq -r '.[0].id')
+          curl -fs -b jar -H 'x-rf: 1' -H 'content-type: application/json' -d '{"template":"project-tracker"}' "http://localhost:8787/api/workspaces/$ws/bases"
+          docker logs rowflare
+
+      - name: Image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.IMAGE }}
+            ${{ env.HUB_IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # The Docker Hub page shows the README, with relative links completed to GitHub.
+      - name: Docker Hub description
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: rowflare/rowflare
+          short-description: Open-source Airtable alternative that runs on Cloudflare Workers or any Docker host.
+          readme-filepath: ./README.md
+          enable-url-completion: true
