@@ -1,0 +1,621 @@
+[
+  {
+    "feature": "dashboards",
+    "title": "Dashboards",
+    "bench": [
+      {
+        "action": "Dashboard with 8 widgets, cache empty",
+        "ms": 1401,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      },
+      {
+        "action": "The same dashboard, cached",
+        "ms": 0.02,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      }
+    ],
+    "scenarios": [
+      {
+        "name": "Six widget types with real data",
+        "checked": "Number, bar, line (stacked area by stage), donut, summary table and Markdown text over the CRM template; every number equals POST /aggregate (30 deals; amount by stage 192,500 / 149,500 / 133,000 / 117,500 / 107,000 / 72,500; deals by stage 8/6/5/5/4/2)",
+        "result": "pass",
+        "image": "docs/verification/img/dashboards-overview.png"
+      },
+      {
+        "name": "Widget editor with live preview",
+        "checked": "Add a Number widget, switch its table in the editor: preview goes from 12 (Companies) to 30 (Deals); turn on comparison and the date field; Save writes only the changed settings",
+        "result": "pass",
+        "image": "docs/verification/img/dashboards-editor.png"
+      },
+      {
+        "name": "Global date range",
+        "checked": "This month shows 10 deals and +900% against September (1); Last 30 days shows 4; both equal the API with the same range; the choice is kept after a reload",
+        "result": "pass",
+        "image": "docs/verification/img/dashboards-range-month.png"
+      },
+      {
+        "name": "Drill-down to records",
+        "checked": "Number card lists 30 records, bar Negotiation 8, pie slice Negotiation 8, pivot cell Lead / Nov 2026 3, all equal to the aggregate counts",
+        "result": "pass",
+        "image": "docs/verification/img/dashboards-drill.png"
+      },
+      {
+        "name": "Open a record from a drill list",
+        "checked": "Clicking a row opens the record modal above the list",
+        "result": "pass",
+        "image": "docs/verification/img/dashboards-drill-record.png"
+      },
+      {
+        "name": "Layout drag and resize",
+        "checked": "In Edit layout, drag the text block down and resize the number card; positions and widget settings are kept after a reload",
+        "result": "pass",
+        "image": "docs/verification/img/dashboards-layout.png"
+      },
+      {
+        "name": "Live refresh",
+        "checked": "A write from another client to a deal updates the dashboard in 1.3 s, re-querying only widgets on that table; a write to Companies sends no dashboard requests",
+        "result": "pass"
+      },
+      {
+        "name": "Viewer is read only",
+        "checked": "A workspace viewer sees no Add widget, Edit layout or widget menus; drill-down still works",
+        "result": "pass",
+        "image": "docs/verification/img/dashboards-viewer.png"
+      },
+      {
+        "name": "Phone width",
+        "checked": "At 390 px the widgets stack in one column in reading order, with no editing controls",
+        "result": "pass",
+        "image": "docs/verification/img/dashboards-phone.png"
+      },
+      {
+        "name": "Unsafe Markdown",
+        "checked": "<script> typed into a text block shows as text; a javascript: link is not linked; https links open in a new tab",
+        "result": "pass",
+        "image": "docs/verification/img/dashboards-overview.png"
+      },
+      {
+        "name": "Deleted field",
+        "checked": "Deleting the field a widget sums shows \"The data source changed; pick another\" with a Settings button; the other widgets keep working",
+        "result": "pass",
+        "image": "docs/verification/img/dashboards-source-changed.png"
+      },
+      {
+        "name": "Table pages stay light",
+        "checked": "Opening a table loads index, react, BasePage, api, editors and grid chunks only; the ECharts chunk (220.6 KB gzip) loads when a dashboard opens",
+        "result": "pass"
+      }
+    ],
+    "date": "2026-10-21",
+    "tests": {
+      "files": 4,
+      "total": 61,
+      "passed": 61,
+      "failed": 0
+    }
+  },
+  {
+    "feature": "views",
+    "title": "Calendar, timeline, gallery and grid grouping",
+    "bench": [
+      {
+        "action": "Calendar month window (6 weeks, 2,000 rows inline)",
+        "ms": 75.4,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      },
+      {
+        "action": "Grid grouped by 2 fields + sum summaries",
+        "ms": 579.33,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      },
+      {
+        "action": "Kanban group counts",
+        "ms": 64.95,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      }
+    ],
+    "scenarios": [
+      {
+        "name": "Calendar month",
+        "checked": "Records in their days with multi-day bars and +N more; the month window holds 156 records, equal to the API range query",
+        "result": "pass",
+        "image": "docs/verification/img/views-calendar-month.png"
+      },
+      {
+        "name": "Calendar week",
+        "checked": "Week view with timed and all-day records",
+        "result": "pass",
+        "image": "docs/verification/img/views-calendar-week.png"
+      },
+      {
+        "name": "Timeline with lanes",
+        "checked": "Projects by start and duration in Status lanes, week scale, today line",
+        "result": "pass",
+        "image": "docs/verification/img/views-timeline.png"
+      },
+      {
+        "name": "Gallery",
+        "checked": "Cards with the chosen fields and select colors",
+        "result": "pass",
+        "image": "docs/verification/img/views-gallery.png"
+      },
+      {
+        "name": "Grid grouped by 3 levels with summaries",
+        "checked": "Status > Priority > Assignee headers with counts; Todo shows 89 records and Estimate sum 735.4, equal to the aggregate API",
+        "result": "pass",
+        "image": "docs/verification/img/views-grid-groups.png"
+      },
+      {
+        "name": "Phone width",
+        "checked": "Calendar at 390 px",
+        "result": "pass",
+        "image": "docs/verification/img/views-phone.png"
+      }
+    ],
+    "date": "2026-10-21",
+    "tests": {
+      "files": 6,
+      "total": 41,
+      "passed": 41,
+      "failed": 0
+    }
+  },
+  {
+    "feature": "mcp",
+    "title": "MCP server",
+    "bench": [
+      {
+        "action": "Group by a select field with count and sum (aggregate)",
+        "ms": 205.63,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      }
+    ],
+    "scenarios": [
+      {
+        "name": "tools/list over Streamable HTTP",
+        "checked": "curl with a personal access token to /mcp lists 20 tools (16 from part 1, 4 dashboard tools)",
+        "result": "pass"
+      },
+      {
+        "name": "aggregate tool",
+        "checked": "Deals grouped by Stage with count and sum returns names, not ids: Negotiation 8 / 192,500 ... Lost 2 / 72,500, total 30",
+        "result": "pass"
+      },
+      {
+        "name": "get_dashboard tool",
+        "checked": "Returns the six widgets with table and field names and current numbers (total 30 per data widget)",
+        "result": "pass"
+      },
+      {
+        "name": "Worker bundle",
+        "checked": "wrangler deploy --dry-run: 1,813.52 KiB, 336.15 KiB gzip (Workers Free limit 3 MiB)",
+        "result": "pass"
+      }
+    ],
+    "date": "2026-10-21",
+    "tests": {
+      "files": 2,
+      "total": 35,
+      "passed": 35,
+      "failed": 0
+    }
+  },
+  {
+    "feature": "core",
+    "title": "Core engine and API",
+    "bench": [
+      {
+        "action": "Open view first page (300 ids + count)",
+        "ms": 0.5,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      },
+      {
+        "action": "Load full id list of a 50k view",
+        "ms": 15.06,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      },
+      {
+        "action": "Edit a cell + rollup update",
+        "ms": 0.28,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      },
+      {
+        "action": "Filter by any field",
+        "ms": 53.33,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      },
+      {
+        "action": "Sort by any field",
+        "ms": 98.4,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      },
+      {
+        "action": "Filter + sort",
+        "ms": 65.76,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      },
+      {
+        "action": "Search",
+        "ms": 70.48,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      },
+      {
+        "action": "Full rollup recompute",
+        "ms": 294,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      },
+      {
+        "action": "Full formula column recompute",
+        "ms": 251,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      },
+      {
+        "action": "One 500-row recompute batch",
+        "ms": 2.72,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      }
+    ],
+    "scenarios": [],
+    "date": "2026-10-21",
+    "tests": {
+      "files": 6,
+      "total": 272,
+      "passed": 272,
+      "failed": 0
+    }
+  },
+  {
+    "feature": "automations",
+    "title": "Automations",
+    "bench": [
+      {
+        "action": "Edit a cell + rollup update",
+        "ms": 0.2,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      },
+      {
+        "action": "Edit a cell + rollup update, 3 record triggers on the table",
+        "ms": 0.24,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      },
+      {
+        "action": "Paste 1,000 rows and delete them",
+        "ms": 24.44,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      },
+      {
+        "action": "Paste 1,000 rows and delete them, 3 record triggers (1,000 runs recorded)",
+        "ms": 57.17,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      },
+      {
+        "action": "Execute 100 queued runs that read and update their record",
+        "ms": 31.08,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      },
+      {
+        "action": "Record edit to outgoing HTTP request, median of 5",
+        "ms": 8,
+        "rows": 30,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1"
+      }
+    ],
+    "scenarios": [
+      {
+        "name": "Record trigger to HTTP",
+        "checked": "Won deals built in the editor (a deal starts to match Stage is Won, then POST its name and amount); five deals set to Won; the receiver got five requests with the right names and amounts (edit to request 14, 8, 9, 8, 8 ms); the run log shows each step's input and output",
+        "result": "pass",
+        "image": "docs/verification/img/automations-editor.png"
+      },
+      {
+        "name": "Run log",
+        "checked": "Succeeded runs newest first with the trigger record and who changed it; a run opens to the step's request and answer",
+        "result": "pass",
+        "image": "docs/verification/img/automations-runs.png"
+      },
+      {
+        "name": "Schedule",
+        "checked": "Every day at 05:49 Asia/Shanghai, create a company named Scheduled {{now}}; the run started at 05:49:00.004 and the company exists",
+        "result": "pass",
+        "image": null
+      },
+      {
+        "name": "Webhook",
+        "checked": "JSON and form calls answered 202 and created two deals from the body; a wrong token 404; broken JSON 400",
+        "result": "pass",
+        "image": "docs/verification/img/automations-webhook.png"
+      },
+      {
+        "name": "Button",
+        "checked": "Button field made in the field dialog; a click in the grid set the deal to Won; a viewer was refused until viewers were allowed, saw no Automations link and got 403 for definitions",
+        "result": "pass",
+        "image": "docs/verification/img/automations-button.png"
+      },
+      {
+        "name": "Test run",
+        "checked": "Test run with a chosen deal: step card green, the panel shows the request and the answer; the month's run count did not change",
+        "result": "pass",
+        "image": "docs/verification/img/automations-test-run.png"
+      },
+      {
+        "name": "Failure, retries and run again",
+        "checked": "Against an address answering 503: tries at 0 s, +10 s, +1 min and +5 min, then Failed; after fixing the step, Run again from the failed step succeeded",
+        "result": "pass",
+        "image": "docs/verification/img/automations-retry.png"
+      },
+      {
+        "name": "Email over SMTP",
+        "checked": "SMTP saved in Settings and a test email received; an HTML email step arrived with To, Cc and envelope right, the deal name escaped, and a record link that opens the record",
+        "result": "pass",
+        "image": "docs/verification/img/automations-email-settings.png"
+      },
+      {
+        "name": "If / otherwise",
+        "checked": "Amount over 50,000 posts to /big, otherwise to /small; an 80,000 and a 20,000 deal each took their own path",
+        "result": "pass",
+        "image": "docs/verification/img/automations-branch.png"
+      },
+      {
+        "name": "Loop protection",
+        "checked": "An automation that updates its own trigger record ran once for one edit and added one !",
+        "result": "pass",
+        "image": null
+      },
+      {
+        "name": "Phone",
+        "checked": "390 px: list and flow in one column, no editing controls, no sideways scrolling",
+        "result": "pass",
+        "image": "docs/verification/img/automations-phone.png"
+      },
+      {
+        "name": "Docker runtime",
+        "checked": "docker/server.mjs with a fresh data directory: webhook made a deal, wrong token 404, record trigger reached the receiver 9 ms after the edit, SMTP test email arrived through workerd TCP sockets",
+        "result": "pass",
+        "image": null
+      }
+    ],
+    "date": "2026-10-21",
+    "tests": {
+      "files": 14,
+      "total": 125,
+      "passed": 125,
+      "failed": 0
+    }
+  },
+  {
+    "feature": "ai",
+    "title": "AI fields",
+    "bench": [
+      {
+        "action": "Edit a cell + rollup update",
+        "ms": 1.2,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1, machine under other load (load average about 31)"
+      },
+      {
+        "action": "Edit a cell + rollup update, 2 auto-updating AI fields on the table",
+        "ms": 0.8,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1, machine under other load (load average about 31)"
+      },
+      {
+        "action": "Paste 1,000 rows and delete them",
+        "ms": 132.37,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1, machine under other load (load average about 31)"
+      },
+      {
+        "action": "Paste 1,000 rows and delete them, 2 AI fields (2,000 cells queued)",
+        "ms": 121.25,
+        "rows": 50000,
+        "env": "local wrangler dev, Apple M5 Pro, node v24.18.1, machine under other load (load average about 31)"
+      },
+      {
+        "action": "Generate a column of 1,003 records, fake model answering in 1 s, at most 6 calls at once",
+        "ms": 171017,
+        "rows": 1003,
+        "env": "local wrangler dev, Apple M5 Pro"
+      },
+      {
+        "action": "Record edit to AI answer written back with DeepSeek deepseek-flash, median of 5 (includes 2 s debounce)",
+        "ms": 3216,
+        "rows": 30,
+        "env": "local wrangler dev, Apple M5 Pro"
+      }
+    ],
+    "scenarios": [
+      {
+        "name": "AI services",
+        "checked": "DeepSeek added from its preset; Test answered OK; only the last four key characters are shown; calls this month counted",
+        "result": "pass",
+        "image": "docs/verification/img/ai-settings.png"
+      },
+      {
+        "name": "Write copy",
+        "checked": "Write copy template, preview from DeepSeek, 12 existing records generated after confirming; Generating and Waiting states and header progress",
+        "result": "pass"
+      },
+      {
+        "name": "Classification",
+        "checked": "Single select Priority on 30 deals; preview answered High; all 30 answers followed the rule in the prompt",
+        "result": "pass",
+        "image": "docs/verification/img/ai-field-dialog.png"
+      },
+      {
+        "name": "Automatic update",
+        "checked": "Changing a deal's amount from 7,500 to 80,000 showed Waiting, then High",
+        "result": "pass",
+        "image": "docs/verification/img/ai-grid.png"
+      },
+      {
+        "name": "Numbers",
+        "checked": "12,500, 3,200 and 48,000 read from free text including 48k",
+        "result": "pass"
+      },
+      {
+        "name": "Wrong answers",
+        "checked": "An answer outside the options shows as a red error with the model's word",
+        "result": "pass",
+        "image": "docs/verification/img/ai-error.png"
+      },
+      {
+        "name": "Typed by hand",
+        "checked": "A typed value survives input changes; Regenerate replaces it and clears the mark",
+        "result": "pass"
+      },
+      {
+        "name": "Images",
+        "checked": "Images from an attachment field reached DeepSeek V4.1 Flash and were described",
+        "result": "pass",
+        "image": "docs/verification/img/ai-image.png"
+      },
+      {
+        "name": "Stop",
+        "checked": "Stop after 30 of 203: no further model calls, running answers dropped, 173 left not generated",
+        "result": "pass"
+      },
+      {
+        "name": "Automation",
+        "checked": "AI generate step with JSON output feeding an update step; run log shows prompt and answer",
+        "result": "pass",
+        "image": "docs/verification/img/ai-automation.png"
+      },
+      {
+        "name": "Phone",
+        "checked": "Record view at 390 px with AI state, error and Regenerate; no sideways scrolling",
+        "result": "pass",
+        "image": "docs/verification/img/ai-phone.png"
+      },
+      {
+        "name": "Docker runtime",
+        "checked": "Private service addresses refused without AUTOMATION_ALLOW_PRIVATE (also a host name resolving to 127.0.0.1); with it, an AI field filled; Workers AI not offered",
+        "result": "pass"
+      }
+    ],
+    "date": "2026-10-21",
+    "tests": {
+      "files": 11,
+      "total": 72,
+      "passed": 72,
+      "failed": 0
+    }
+  },
+  {
+    "feature": "hosting",
+    "title": "Plan limits, account emails and hosting extensions",
+    "bench": [],
+    "scenarios": [
+      {
+        "name": "Base limit as owner",
+        "checked": "Dev test plan with 3 bases per workspace; creating an eighth base in a workspace with 7 answers 402 and the dialog shows \"This plan allows 3 bases per workspace\" with an Upgrade button that opens Settings, Billing",
+        "result": "pass",
+        "image": "docs/verification/img/hosting-base-limit.png"
+      },
+      {
+        "name": "Record limit as owner and as a member",
+        "checked": "Dev test plan with 50 records per base; adding a record to a base with 1,003 records is refused as a whole (the count stays 1,003); the owner's toast has Upgrade, an editor's toast says \"Ask a workspace owner to upgrade.\"",
+        "result": "pass",
+        "image": "docs/verification/img/hosting-record-limit-member.png"
+      },
+      {
+        "name": "CSV import over the limit",
+        "checked": "A 60-record CSV into a base with room for 39 is refused with \"This plan allows 50 records per base; 39 more can be added\" before the table is created",
+        "result": "pass",
+        "image": "docs/verification/img/hosting-import-limit.png"
+      },
+      {
+        "name": "Usage notice at 80%",
+        "checked": "Home shows the limits at or over 80% (bases 7 of 3, records 1,003 of 50) with See plans for the owner and \"Ask a workspace owner to upgrade.\" for an editor",
+        "result": "pass",
+        "image": "docs/verification/img/hosting-home-notice.png"
+      },
+      {
+        "name": "Billing tab",
+        "checked": "Settings, Billing shows the hosting's plan, usage bars for the five limits, a notice, a note section and its buttons; Upgrade (test) POSTs and follows the returned URL to the paid plan with raised limits, and back",
+        "result": "pass",
+        "image": "docs/verification/img/hosting-billing-free.png"
+      },
+      {
+        "name": "Password reset by email",
+        "checked": "Forgot password? on the login page sends a reset email through a local SMTP server (wrangler dev and the Docker server); the link opens Choose a new password, which sets it and signs the browser in; the same link a second time is refused",
+        "result": "pass",
+        "image": "docs/verification/img/hosting-reset.png"
+      },
+      {
+        "name": "Email confirmation",
+        "checked": "An unconfirmed account sees Check your inbox to confirm your email; Send again mails a new link; opening it shows Email confirmed and sets the account confirmed; reusing it answers \"This link is invalid or has expired\"",
+        "result": "pass",
+        "image": "docs/verification/img/hosting-verify-banner.png"
+      }
+    ],
+    "date": "2026-10-21",
+    "tests": {
+      "files": 4,
+      "total": 46,
+      "passed": 46,
+      "failed": 0
+    }
+  },
+  {
+    "feature": "signin",
+    "title": "Email code sign-in and sign-in options",
+    "bench": [],
+    "scenarios": [
+      {
+        "name": "Sign up with an email code",
+        "checked": "Code mode with mail to a local SMTP server: the page asks only for an email, the 6-digit code arrives, entering it creates the account and its workspace and opens Home",
+        "result": "pass",
+        "image": "docs/verification/img/passwordless-code-step.png"
+      },
+      {
+        "name": "Join from an invite with a code",
+        "checked": "A signed-out person opens an invite, asks for a code, uses Send a new code and enters the newest code: they join the workspace as an editor and get no workspace of their own",
+        "result": "pass"
+      },
+      {
+        "name": "No passwords anywhere in code mode",
+        "checked": "/forgot goes to the sign-in page, Settings, Account has no Password section, and the password routes answer 404",
+        "result": "pass",
+        "image": "docs/verification/img/passwordless-login.png"
+      },
+      {
+        "name": "Readable sign-in errors",
+        "checked": "/login?error=Sign-in was cancelled. shows the text above the form",
+        "result": "pass"
+      },
+      {
+        "name": "Password mode unchanged",
+        "checked": "Without AUTH_EMAIL the log-in page still has Email, Password, Forgot password? and Sign up, and config reports no sign-in options",
+        "result": "pass"
+      }
+    ],
+    "date": "2026-10-21",
+    "tests": {
+      "files": 4,
+      "total": 34,
+      "passed": 34,
+      "failed": 0
+    }
+  }
+]

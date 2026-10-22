@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "rowflare",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "build": { "command": "npm run build:web" },
+  "rules": [{ "type": "Text", "globs": ["**/*.sql"], "fallthrough": true }],
+  "assets": {
+    "directory": "dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/mcp"]
+  },
+  "durable_objects": { "bindings": [{ "name": "BASE", "class_name": "BaseDO" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["BaseDO"] }],
+  "d1_databases": [{ "binding": "DB", "database_name": "rowflare", "migrations_dir": "migrations" }],
+  "r2_buckets": [{ "binding": "FILES", "bucket_name": "rowflare-files" }],
+  "triggers": { "crons": ["17 * * * *"] },
+  // MODE: "selfhost" (first user owns the instance, invite-only after that) or "cloud" (open signup + billing).
+  "vars": { "MODE": "selfhost", "ALLOW_SIGNUP": "false" },
+  // Durable Objects need the Workers Paid plan; long batch jobs use up to 5 minutes of CPU.
+  "limits": { "cpu_ms": 300000 },
+  "observability": { "enabled": true }
+}

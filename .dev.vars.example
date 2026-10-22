@@ -1,0 +1,17 @@
+# Local settings for `wrangler dev`. Copy to .dev.vars (git-ignored).
+ALLOW_SIGNUP=true
+BENCH_TOKEN=local-bench-token
+# Encrypts AI service keys and mail credentials saved by workspace owners.
+SECRET_KEY=local-secret-key-change-me
+# Lets automation HTTP steps and AI services reach 127.0.0.1 (local receivers, a fake model, Ollama) during tests.
+AUTOMATION_ALLOW_PRIVATE=true
+# Workers AI calls per workspace per month, when the AI binding is set; unset means no limit.
+# AI_WORKERS_MONTHLY_CALLS=1000
+# Account emails (verification, password reset) through SMTP or Resend; without them (and without an EMAIL binding) those features are hidden.
+# MAIL_PROVIDER=smtp
+# MAIL_FROM=noreply@example.com
+# SMTP_HOST=127.0.0.1
+# SMTP_PORT=2525
+# SMTP_SECURITY=none
+# Local development only: a test hosting with small limits and a fake Billing tab (src/worker/dev-hosting.ts).
+# DEV_TEST_HOSTING=true

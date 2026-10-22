@@ -1,0 +1,14 @@
+node_modules
+dist
+data
+.wrangler
+.dev.vars
+.git
+.github
+.playwright-mcp
+site
+bench
+docs
+test
+*.log
+.DS_Store
