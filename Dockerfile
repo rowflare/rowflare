@@ -4,8 +4,9 @@
 # The build output is plain JS, so build once on the native platform.
 FROM --platform=$BUILDPLATFORM node:22-bookworm-slim AS build
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm install -g pnpm@11.18.0
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile
 COPY . .
 RUN npm run build:docker
 
@@ -15,8 +16,9 @@ ENV NODE_ENV=production \
     HOST=0.0.0.0 \
     PORT=8787 \
     DATA_DIR=/data
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm install -g pnpm@11.18.0
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile --prod && pnpm store prune
 COPY docker/server.mjs ./docker/server.mjs
 COPY --from=build /app/dist ./dist
 RUN mkdir -p /data && chown node:node /data

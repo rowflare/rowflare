@@ -1,6 +1,7 @@
 {
   "name": "rowflare",
   "version": "0.1.0",
+  "packageManager": "pnpm@11.18.0",
   "private": true,
   "description": "Open-source Airtable alternative that runs on your own Cloudflare account.",
   "license": "AGPL-3.0-only",
@@ -33,6 +34,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-grid-layout": "2.2.4",
+    "react-resizable": "3.2.0",
     "react-responsive-carousel": "3.2.23",
     "zod": "4.6.4"
   },

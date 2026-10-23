@@ -8,6 +8,8 @@ order: 30
 
 The REST API lives under `/api/v1` on your Rowflare instance. It is modeled on the Airtable Web API: the same record shape (`id`, `createdTime`, `fields`), field names as keys, `typecast`, `filterByFormula`, `sort`, `view`, `pageSize` and `offset`.
 
+An OpenAPI 3.1 description of these routes is at [rowflare.com/openapi.json](https://rowflare.com/openapi.json) (also `docs/openapi.json` in the repository).
+
 ## Authentication
 
 Create a personal access token in **Settings, API tokens**. Send it as a bearer token:

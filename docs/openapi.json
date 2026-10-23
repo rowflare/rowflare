@@ -1,0 +1,1169 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Rowflare REST API",
+    "version": "0.1.0",
+    "description": "Read and write records in a Rowflare instance with a personal access token. Modeled on the Airtable Web API: same record shape (id, createdTime, fields), field names as keys, typecast, filterByFormula, sort, view, pageSize and offset. Create a token in Settings, API tokens. Full guide: https://rowflare.com/docs/api/",
+    "license": {
+      "name": "AGPL-3.0-only",
+      "identifier": "AGPL-3.0-only"
+    },
+    "contact": {
+      "url": "https://github.com/rowflare/rowflare"
+    }
+  },
+  "externalDocs": {
+    "url": "https://rowflare.com/docs/api/"
+  },
+  "servers": [
+    {
+      "url": "{instance}",
+      "description": "Your Rowflare instance (self-hosted or https://app.rowflare.com)",
+      "variables": {
+        "instance": {
+          "default": "https://app.rowflare.com"
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Schema",
+      "description": "Bases, tables, fields and views the token can see"
+    },
+    {
+      "name": "Records",
+      "description": "List, read, create, update and delete records"
+    },
+    {
+      "name": "Webhooks",
+      "description": "Start automations from other systems; the URL's token is the credential"
+    }
+  ],
+  "paths": {
+    "/api/v1/bases": {
+      "get": {
+        "tags": [
+          "Schema"
+        ],
+        "operationId": "listBases",
+        "summary": "List bases the token can access",
+        "responses": {
+          "200": {
+            "description": "Bases",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "bases": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "permissionLevel": {
+                            "type": "string",
+                            "enum": [
+                              "read",
+                              "edit",
+                              "create"
+                            ],
+                            "description": "read for viewers, edit for editors, create for owners"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v1/bases/{baseId}/tables": {
+      "get": {
+        "tags": [
+          "Schema"
+        ],
+        "operationId": "listTables",
+        "summary": "List tables with fields and views",
+        "parameters": [
+          {
+            "name": "baseId",
+            "in": "path",
+            "required": true,
+            "description": "Base id (app...)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tables",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tables": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Table"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/{baseId}/{table}": {
+      "parameters": [
+        {
+          "name": "baseId",
+          "in": "path",
+          "required": true,
+          "description": "Base id (app...)",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "table",
+          "in": "path",
+          "required": true,
+          "description": "Table id (tbl...) or URL-encoded table name",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "Records"
+        ],
+        "operationId": "listRecords",
+        "summary": "List records",
+        "parameters": [
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "description": "1 to 100, default 100",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Value of offset from the previous page",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "maxRecords",
+            "in": "query",
+            "required": false,
+            "description": "Stop after this many records",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "view",
+            "in": "query",
+            "required": false,
+            "description": "View id or name; applies its filters and sorts",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filterByFormula",
+            "in": "query",
+            "required": false,
+            "description": "Formula in Airtable syntax; records where it is truthy are returned",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "style": "deepObject",
+            "explode": true,
+            "description": "sort[0][field]=Name&sort[0][direction]=desc; add sort[1]... for more",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          {
+            "name": "fields[]",
+            "in": "query",
+            "description": "Only return these fields (repeatable)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "returnFieldsByFieldId",
+            "in": "query",
+            "required": false,
+            "description": "true to key fields by field id instead of name",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of records",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "402": {
+            "$ref": "#/components/responses/PlanLimit"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Records"
+        ],
+        "operationId": "createRecords",
+        "summary": "Create one record or up to 1,000 records",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "records"
+                    ],
+                    "properties": {
+                      "records": {
+                        "type": "array",
+                        "maxItems": 1000,
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "fields"
+                          ],
+                          "properties": {
+                            "fields": {
+                              "$ref": "#/components/schemas/Fields"
+                            }
+                          }
+                        }
+                      },
+                      "typecast": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "fields"
+                    ],
+                    "properties": {
+                      "fields": {
+                        "$ref": "#/components/schemas/Fields"
+                      },
+                      "typecast": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The record (single form) or the records (batch form)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Record"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RecordList"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "402": {
+            "$ref": "#/components/responses/PlanLimit"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Records"
+        ],
+        "operationId": "updateRecords",
+        "summary": "Update records; fields left out are unchanged",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "records"
+                    ],
+                    "properties": {
+                      "records": {
+                        "type": "array",
+                        "maxItems": 1000,
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "fields"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "integer"
+                            },
+                            "fields": {
+                              "$ref": "#/components/schemas/Fields"
+                            }
+                          }
+                        }
+                      },
+                      "typecast": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "fields"
+                    ],
+                    "properties": {
+                      "fields": {
+                        "$ref": "#/components/schemas/Fields"
+                      },
+                      "typecast": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The record (single form) or the records (batch form)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Record"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RecordList"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "402": {
+            "$ref": "#/components/responses/PlanLimit"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Records"
+        ],
+        "operationId": "replaceRecords",
+        "summary": "Update records; clears every writable field left out",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "required": [
+                      "records"
+                    ],
+                    "properties": {
+                      "records": {
+                        "type": "array",
+                        "maxItems": 1000,
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "fields"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "integer"
+                            },
+                            "fields": {
+                              "$ref": "#/components/schemas/Fields"
+                            }
+                          }
+                        }
+                      },
+                      "typecast": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "fields"
+                    ],
+                    "properties": {
+                      "fields": {
+                        "$ref": "#/components/schemas/Fields"
+                      },
+                      "typecast": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The record (single form) or the records (batch form)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Record"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RecordList"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "402": {
+            "$ref": "#/components/responses/PlanLimit"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Records"
+        ],
+        "operationId": "deleteRecords",
+        "summary": "Delete records",
+        "parameters": [
+          {
+            "name": "records[]",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "style": "form",
+            "explode": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "records": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Deleted"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "402": {
+            "$ref": "#/components/responses/PlanLimit"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
+          }
+        }
+      }
+    },
+    "/api/v1/{baseId}/{table}/{recordId}": {
+      "parameters": [
+        {
+          "name": "baseId",
+          "in": "path",
+          "required": true,
+          "description": "Base id (app...)",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "table",
+          "in": "path",
+          "required": true,
+          "description": "Table id (tbl...) or URL-encoded table name",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "recordId",
+          "in": "path",
+          "required": true,
+          "description": "Record id",
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "get": {
+        "tags": [
+          "Records"
+        ],
+        "operationId": "getRecord",
+        "summary": "Get one record",
+        "responses": {
+          "200": {
+            "description": "The record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "402": {
+            "$ref": "#/components/responses/PlanLimit"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Records"
+        ],
+        "operationId": "updateRecord",
+        "summary": "Update one record",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "fields"
+                ],
+                "properties": {
+                  "fields": {
+                    "$ref": "#/components/schemas/Fields"
+                  },
+                  "typecast": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "402": {
+            "$ref": "#/components/responses/PlanLimit"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Records"
+        ],
+        "operationId": "replaceRecord",
+        "summary": "Replace one record's writable fields",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "fields"
+                ],
+                "properties": {
+                  "fields": {
+                    "$ref": "#/components/schemas/Fields"
+                  },
+                  "typecast": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "402": {
+            "$ref": "#/components/responses/PlanLimit"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Records"
+        ],
+        "operationId": "deleteRecord",
+        "summary": "Delete one record",
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Deleted"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "402": {
+            "$ref": "#/components/responses/PlanLimit"
+          },
+          "422": {
+            "$ref": "#/components/responses/Unprocessable"
+          }
+        }
+      }
+    },
+    "/api/hooks/{baseId}/{token}": {
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "operationId": "callWebhook",
+        "summary": "Trigger an automation that starts on 'When a webhook is called'",
+        "security": [],
+        "parameters": [
+          {
+            "name": "baseId",
+            "in": "path",
+            "required": true,
+            "description": "Base id (app...)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "description": "Secret token of the automation's webhook URL",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Run queued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "runId": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "413": {
+            "description": "Body over 256 KB"
+          },
+          "429": {
+            "description": "More than 60 calls in a minute for one base"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Personal access token (rf_...) from Settings, API tokens"
+      }
+    },
+    "schemas": {
+      "Fields": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "Cell values keyed by field name (or id with returnFieldsByFieldId). Empty cells are omitted. Lookup, rollup, formula, created time, last modified time and autonumber are read-only."
+      },
+      "Record": {
+        "type": "object",
+        "required": [
+          "id",
+          "createdTime",
+          "fields"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Record id (integer, unlike Airtable's rec... strings)",
+            "examples": [
+              17
+            ]
+          },
+          "createdTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fields": {
+            "$ref": "#/components/schemas/Fields"
+          }
+        }
+      },
+      "RecordList": {
+        "type": "object",
+        "required": [
+          "records"
+        ],
+        "properties": {
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Record"
+            }
+          },
+          "offset": {
+            "type": "string",
+            "description": "Present when there are more records"
+          }
+        }
+      },
+      "Deleted": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "deleted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Field": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "examples": [
+              "text",
+              "longText",
+              "number",
+              "checkbox",
+              "date",
+              "singleSelect",
+              "multiSelect",
+              "link",
+              "lookup",
+              "rollup",
+              "formula"
+            ]
+          },
+          "options": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "Table": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "primaryFieldId": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Field"
+            }
+          },
+          "views": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "enum": [
+                  "bases",
+                  "records",
+                  "attachments",
+                  "automationRuns",
+                  "workersAiCalls"
+                ]
+              },
+              "limit": {
+                "type": "integer"
+              },
+              "upgradeUrl": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Missing or bad token",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "No permission",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Unknown base, table or record",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "PlanLimit": {
+        "description": "A plan limit was reached (hosted editions)",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Unprocessable": {
+        "description": "Invalid field or value",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}
